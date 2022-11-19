@@ -32,7 +32,7 @@ def recieve():
     while True:
         print("ALGO HA SIDO RECIVIDO")
         try:
-            mensaje=client_socket.recv((2048))
+            mensaje=client_socket.recv(2048)
             mensaje.decode()
             mensaje=json.loads(mensaje)
             print(mensaje)
@@ -47,7 +47,7 @@ def recieve():
         except OSError:
             break
 
-def send(data):
+def env(data):
     data=json.dumps(data)
     data=data.encode()
     client_socket.send(data)
@@ -64,9 +64,10 @@ def show_color(new_color):
     color=new_color
 
 ##ESCRITURA
-
+tempt_linex=0
+tempt_liney=0
 def addLine(info):
-    canvas.create_line((float(info[1]),float(info[2]),float(info[3]),float(info[4])),width=float(info(5)),fill=color,capstyle=ROUND,smooth=TRUE)
+    canvas.create_line((float(info[1]),float(info[2]),float(info[3]),float(info[4])),width=float(info[5]),fill=color,capstyle=ROUND,smooth=TRUE)
 
 def new_canvas():
     canvas.delete('all')
@@ -80,12 +81,14 @@ def textoCaja(info):
 ##ENVIO
 
 def env_addLine(work):
-    data=["linea",current_x,current_y,work.x,work.y,get_current_value()]
-    send(data)
+    global current_x,current_y,color
+    data=["linea",current_x,current_y,work.x,work.y,get_current_value(),color]
+    current_x,current_y=work.x, work.y
+    env(data)
 
-def env_new_canvas(work):
-    data=["borrar",current_x,current_y,work.x,work.y]
-    send(data)
+def env_new_canvas():
+    data=["borrar"]
+    env(data)
 
 def env_textoCaja(work):
     texto=cajaTexto.get()
@@ -94,13 +97,18 @@ def env_textoCaja(work):
     current_y=work.y
     data=["texto",current_x,current_y,work.x,work.y,texto]
     print("ENVIADO")
-    send(data)
+    env(data)
 
 
 ###### PIZARRA#####
+
 root=Tk() #ventana
 
-root.title("White Board")
+#icon
+imagen_icon=PhotoImage(file="logo_pato.jpg")
+root.iconphoto(False,imagen_icon)
+
+root.title("White duck Board")
 
 root.geometry("1050x570+150+50")
 root.configure(bg="#f2f3f5")

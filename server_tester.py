@@ -60,10 +60,7 @@ def broadcast(mensaje,connection):
 def remove (connection):
     if connection in list_of_clients:
         list_of_clients.remove(connection)
-#######CODIGO
-
-
- 
+#######CODIGO 
 while 1:
     conn,addr=server.accept()
     list_of_clients.append(conn)

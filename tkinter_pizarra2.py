@@ -7,12 +7,16 @@ from PIL import ImageGrab
 
 root=Tk() #ventana
 
+
+
 root.title("White Board")
 
 root.geometry("1050x570+150+50")
 root.configure(bg="#f2f3f5")
 root.resizable(False,False)
 
+imagen_icon=PhotoImage(file="logo.png")
+root.iconphoto(False,imagen_icon)
 
 current_x= 0
 current_y= 0
@@ -128,7 +132,7 @@ def save_board():
     y1=y+canvas.winfo_height()+150
     ImageGrab.grab().crop((x,y,x1,y1)).save("algo.png")
 
-guardado=PhotoImage(file="guardado.png")
+guardado=PhotoImage(file="Save-icon.png")
 Button(root,image=guardado,bg="#f2f3f5",command=save_board).place(x=30,y=450)
 
 
