@@ -1,13 +1,11 @@
 from tkinter import *
 from tkinter import ttk
 import tkinter as tk
-
-from PIL import ImageGrab
+from os import remove
+from PIL import ImageGrab , Image
 
 
 root=Tk() #ventana
-
-
 
 root.title("White Board")
 
@@ -40,15 +38,23 @@ def new_canvas():
     canvas.delete('all')
     display_pallete()
 
+def erraser_function():
+    global color
+    color='white'
+
 #INTERFAZ
 
-#colocar boton para borrar toda la pizarra
+#colocar boton para borrar (trazo)
 eraser=PhotoImage(file="goma_borrar.png")
-Button(root,image=eraser,bg="#f2f3f5",command=new_canvas).place(x=30,y=400)
+Button(root,image=eraser,bg="#f2f3f5",command=erraser_function).place(x=30,y=400)
 
 #Definir lugar para los colores al lado
 colors=Canvas(root,bg="#ffffff",width=37,height=300,bd=0)
 colors.place(x=30,y=60)
+
+#Definir boton para borrar toda la pantalla
+reset=PhotoImage(file="flecha_reset.png")
+Button(root,image=reset,bg="#f2f3f5",command=new_canvas).place(x=30,y=500)
 
 #mostrar paleta de colores al lado
 def display_pallete():   
@@ -100,12 +106,12 @@ def slider_changed(event):
 
 
 slider=ttk.Scale(root,from_=0,to=100,orient='horizontal',command=slider_changed, variable=current_value)
-slider.place(x=30,y=530)
+slider.place(x=150,y=530)
 
 #value label
  
 value_label= ttk.Label(root,text=get_current_value())
-value_label.place(x=27,y=550)
+value_label.place(x=147,y=550)
 
 
 ###########TEXTO##########
@@ -125,12 +131,23 @@ canvas.bind('<Control-Button-1>',textoCaja)
 
 #########SAVE######
 def save_board():
-    global canvas
+    '''global canvas
     x=root.winfo_rootx()+canvas.winfo_x()+50
     y=root.winfo_rooty()+canvas.winfo_y()+10
     x1=x+canvas.winfo_width()+270
     y1=y+canvas.winfo_height()+150
-    ImageGrab.grab().crop((x,y,x1,y1)).save("algo.png")
+    ImageGrab.grab().crop((x,y,x1,y1)).save("algo.png")'''
+    
+    canvas.postscript(file="myImage.ps", height=canvas.winfo_height(), width=canvas.winfo_width(), colormode="color")
+    img = Image.open("myImage.ps") 
+    img.save("myImage.png", 'png') 
+    img.close()
+    remove('myImage.ps')
+    
+
+
+
+
 
 guardado=PhotoImage(file="Save-icon.png")
 Button(root,image=guardado,bg="#f2f3f5",command=save_board).place(x=30,y=450)
