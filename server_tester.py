@@ -3,10 +3,11 @@
 # https://steelkiwi.com/blog/working-tcp-sockets/
 
 import socket
-import select
-import sys
+#import select
+#import sys
 from _thread import *
 import json
+import threading
 
 ##########SETEO DE SOCKET#####
 
@@ -24,48 +25,41 @@ Port=int(5566)
 server.bind((IP_addres,Port))
 
 #Escucha hasta 10 conexiones (limite de usuarios)
-server.listen(2)
+server.listen()
+
 list_of_clients=[]
 
 ##########FUNCIONES#######
-def clientthread(conn ,addr):
+def clientthread(conn):
     while True:
         try:
             mensaje=conn.recv(2048)
-            mensaje.decode()
-            mensaje=json.loads(mensaje) #recibo lista con datos (idea=> [accion realizada, dato1,dato2,dato n])
-            if mensaje[0]=="linea":
-                broadcast(mensaje,conn)
-            if mensaje[0]=="texto":
-                print("RECIBIDO")
-                broadcast(mensaje,conn)
-            if mensaje[0]=="borrar":
-                broadcast(mensaje,conn)
-
+            broadcast(mensaje)
         except:
-            continue
+            remove(conn)
+            #conn.close()
+            break
 
-def broadcast(mensaje,connection):
+def broadcast(mensaje):
     for clients in list_of_clients:
-            try:
-                print("AQUI")
-                mensaje=json.dumps(mensaje)
-                mensaje=mensaje.encode()
-                clients.send(mensaje)
-            except:
-                clients.close()
-                #si la conexion se pierde  se remuee el cliente
-                remove(clients)
+            clients.send(mensaje)
+            
 
 def remove (connection):
     if connection in list_of_clients:
         list_of_clients.remove(connection)
 #######CODIGO 
+print("Servidor activado , iniciando operaciones")
 while 1:
     conn,addr=server.accept()
     list_of_clients.append(conn)
+
     print(addr[0]+" connected")
-    start_new_thread(clientthread,(conn,addr))
+
+
+    thread=threading.Thread(target=clientthread,args=(conn,))
+    thread.start()
+    #start_new_thread(target=clientthread,args=(conn,))
     
 conn.close()
 # close() -> When communication with a client is finished, the connection needs to be cleaned up

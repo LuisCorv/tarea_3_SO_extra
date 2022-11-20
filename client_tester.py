@@ -30,11 +30,10 @@ from PIL import ImageGrab
 
 def recieve():
     while True:
-        print("ALGO HA SIDO RECIVIDO")
         try:
             mensaje=client_socket.recv(2048)
-            mensaje.decode()
-            mensaje=json.loads(mensaje)
+            mensaje=mensaje.decode("utf8","strict")
+            mensaje=mensaje.split(sep=";")
             print(mensaje)
             if mensaje[0]=="linea":#tipo,curr_x,curr_y,x,y,texto(opcional)
                 addLine(mensaje)
@@ -42,15 +41,15 @@ def recieve():
                 textoCaja(mensaje)
             if mensaje[0]=="borrar":
                 new_canvas()
-            else:
-                pass
+
         except OSError:
+            client_socket.close()
+            print("Ha ocurrido un error, se desconectara al cliente ...")
             break
 
 def env(data):
-    data=json.dumps(data)
-    data=data.encode()
-    client_socket.send(data)
+    data=str(data)
+    client_socket.send(data.encode("utf8"))
 
 
 #################### FUNCIONES DE PIZARRA ###########
@@ -82,12 +81,12 @@ def textoCaja(info):
 
 def env_addLine(work):
     global current_x,current_y,color
-    data=["linea",current_x,current_y,work.x,work.y,get_current_value(),color]
+    data="linea"+";"+str(current_x)+";"+str(current_y)+";"+str(work.x)+";"+str(work.y)+";"+str(get_current_value())+";"+str(color)
     current_x,current_y=work.x, work.y
     env(data)
 
 def env_new_canvas():
-    data=["borrar"]
+    data="borrar"
     env(data)
 
 def env_textoCaja(work):
@@ -95,7 +94,7 @@ def env_textoCaja(work):
     cajaTexto.delete(0,len(texto))
     current_x=work.x
     current_y=work.y
-    data=["texto",current_x,current_y,work.x,work.y,texto]
+    data="texto"+";"+str(current_x)+";"+str(current_y)+";"+str(work.x)+";"+str(work.y)+";"+texto
     print("ENVIADO")
     env(data)
 
