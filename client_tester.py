@@ -11,24 +11,35 @@ from PIL import Image
 
 #################### FUNCIONES DE SOCKET ###########
 
+confirmacion=0
+
 def recieve():
+    global confirmacion
     while True:
         try:
             mensaje=client_socket.recv(2048)
             mensaje=mensaje.decode("utf8","strict")
             mensaje=mensaje.split(sep=";")
             print(mensaje)
-            if mensaje[0]=="linea":#tipo,curr_x,curr_y,x,y,texto(opcional)
+            if  mensaje[0]=="linea":#tipo,curr_x,curr_y,x,y,texto(opcional)
                 addLine(mensaje)
-            if mensaje[0]=="texto":
+            if  mensaje[0]=="texto":
                 textoCaja(mensaje)
-            if mensaje[0]=="borrar":
+            if  mensaje[0]=="borrar":
                 new_canvas()
-
+            if  mensaje[0]=="Sync":
+                confirmacion=1
+            if  mensaje[0]=="Denied":
+                client_socket.close()
+                print("Numero maximo de usuarios ya alcanzado.")
+                finalizar()
         except OSError:
             client_socket.close()
             print("Ha ocurrido un error, se desconectara al cliente ...")
             break
+
+def finalizar():
+    root.destroy()
 
 def env(data):
     data=str(data)
@@ -67,23 +78,28 @@ def erraser_function():
 ##ENVIO
 
 def env_addLine(work):
-    global current_x,current_y,color
-    data="linea"+";"+str(current_x)+";"+str(current_y)+";"+str(work.x)+";"+str(work.y)+";"+str(get_current_value())+";"+str(color)
-    current_x,current_y=work.x, work.y
-    env(data)
+    global confirmacion
+    if confirmacion==1:
+        global current_x,current_y,color
+        data="linea"+";"+str(current_x)+";"+str(current_y)+";"+str(work.x)+";"+str(work.y)+";"+str(get_current_value())+";"+str(color)
+        current_x,current_y=work.x, work.y
+        env(data)
 
 def env_new_canvas():
-    data="borrar"
-    env(data)
+    global confirmacion
+    if confirmacion==1:
+        data="borrar"
+        env(data)
 
 def env_textoCaja(work):
-    texto=cajaTexto.get()
-    cajaTexto.delete(0,len(texto))
-    current_x=work.x
-    current_y=work.y
-    data="texto"+";"+str(current_x)+";"+str(current_y)+";"+str(work.x)+";"+str(work.y)+";"+texto
-    print("ENVIADO")
-    env(data)
+    global confirmacion
+    if confirmacion==1:
+        texto=cajaTexto.get()
+        cajaTexto.delete(0,len(texto))
+        current_x=work.x
+        current_y=work.y
+        data="texto"+";"+str(current_x)+";"+str(current_y)+";"+str(work.x)+";"+str(work.y)+";"+texto
+        env(data)
 
 
 ###### PIZARRA#####
@@ -91,7 +107,7 @@ def env_textoCaja(work):
 root=Tk() #ventana
 
 #icon
-root.title("White  Board")
+root.title("White Duck Board")
 
 root.geometry("1050x570+150+50")
 root.configure(bg="#f2f3f5")
@@ -114,7 +130,7 @@ colors.place(x=30,y=60)
 
 #Definir boton para borrar toda la pantalla
 reset=PhotoImage(file="flecha_reset.png")
-Button(root,image=reset,bg="#f2f3f5",command=new_canvas).place(x=30,y=500)
+Button(root,image=reset,bg="#f2f3f5",command=env_new_canvas).place(x=30,y=500)
 
 def display_pallete():   
     id= colors.create_rectangle((10,10,30,30),fill='black')
@@ -172,7 +188,7 @@ slider.place(x=150,y=530)
 
 #texto
 cajaTexto = tk.Entry(root,font="Helvetica 15")
-value_label.place(x=147,y=550)
+cajaTexto.place(x=400,y=530)
 
 canvas.bind('<Control-Button-1>',env_textoCaja)
 

@@ -1,6 +1,7 @@
 #link con informacion
 # http://pymotw.com/2/socket/tcp.html
 # https://steelkiwi.com/blog/working-tcp-sockets/
+import time
 
 import socket
 #import select
@@ -24,42 +25,58 @@ Port=int(5566)
 #Hace binds d a la IP y el puerto , el cliente debe conectarse al mismo IP y puerto
 server.bind((IP_addres,Port))
 
-#Escucha hasta 10 conexiones (limite de usuarios)
+#Escucha  (limite de usuarios)
 server.listen()
 
+num_conect=0
+action_reg=[]
 list_of_clients=[]
 
 ##########FUNCIONES#######
 def clientthread(conn):
+    if num_conect>1:
+        sync_pizarra(conn)
+    
+    data=str("Sync")
+    conn.send(data.encode("utf8"))
+
     while True:
         try:
             mensaje=conn.recv(2048)
+            action_reg.append(mensaje)
             broadcast(mensaje)
         except:
-            remove(conn)
-            #conn.close()
+            list_of_clients.remove(conn)
+            conn.close()
+            print("Se ha ido un cliente")
             break
 
 def broadcast(mensaje):
     for clients in list_of_clients:
             clients.send(mensaje)
             
+def sync_pizarra(conn):
+    for message in action_reg:
+        time.sleep(0.00000001)
+        conn.send(message)
 
-def remove (connection):
-    if connection in list_of_clients:
-        list_of_clients.remove(connection)
+
 #######CODIGO 
 print("Servidor activado , iniciando operaciones")
 while 1:
-    conn,addr=server.accept()
-    list_of_clients.append(conn)
-
-    print(addr[0]+" connected")
-
-
-    thread=threading.Thread(target=clientthread,args=(conn,))
-    thread.start()
-    #start_new_thread(target=clientthread,args=(conn,))
+    print(num_conect)
+    if num_conect>=5:
+        conn,addr=server.accept()
+        data=str("Denied")
+        conn.send(data.encode("utf8"))
+        conn.close()
+    else:
+        num_conect+=1
+        conn,addr=server.accept()
+        list_of_clients.append(conn)
+        print(addr[0]+" connected")
+        thread=threading.Thread(target=clientthread,args=(conn,))
+        thread.start()
     
 conn.close()
 # close() -> When communication with a client is finished, the connection needs to be cleaned up
