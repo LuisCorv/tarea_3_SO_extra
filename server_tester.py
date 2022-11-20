@@ -34,6 +34,7 @@ list_of_clients=[]
 
 ##########FUNCIONES#######
 def clientthread(conn):
+    global num_conect
     if num_conect>1:
         sync_pizarra(conn)
     
@@ -49,6 +50,8 @@ def clientthread(conn):
             list_of_clients.remove(conn)
             conn.close()
             print("Se ha ido un cliente")
+            num_conect=num_conect-1
+            print(f"El numero de conexiones actual es:{num_conect}")
             break
 
 def broadcast(mensaje):
@@ -64,7 +67,7 @@ def sync_pizarra(conn):
 #######CODIGO 
 print("Servidor activado , iniciando operaciones")
 while 1:
-    print(num_conect)
+    print(f"El numero de conexiones actual es:{num_conect}")
     if num_conect>=5:
         conn,addr=server.accept()
         data=str("Denied")

@@ -1,7 +1,6 @@
 
 from socket import AF_INET,socket,SOCK_STREAM
 from threading import Thread
-import sys
 import socket
 from os import remove
 from tkinter import *
@@ -14,7 +13,7 @@ from PIL import Image
 confirmacion=0
 
 def recieve():
-    global confirmacion
+    global confirmacion, root
     while True:
         try:
             mensaje=client_socket.recv(2048)
@@ -32,14 +31,12 @@ def recieve():
             if  mensaje[0]=="Denied":
                 client_socket.close()
                 print("Numero maximo de usuarios ya alcanzado.")
-                finalizar()
+                break
         except OSError:
             client_socket.close()
             print("Ha ocurrido un error, se desconectara al cliente ...")
-            break
+            break 
 
-def finalizar():
-    root.destroy()
 
 def env(data):
     data=str(data)
@@ -68,7 +65,7 @@ def new_canvas():
 
 def textoCaja(info):
     data=info[5]
-    canvas.create_text(info[1],info[2],text=data, fill="black", font=('Helvetica 20'))
+    canvas.create_text(info[1],info[2],text=data, fill=info[6], font=('Helvetica 20'))
     cajaTexto.delete(0,len(data))
 
 def erraser_function():
@@ -98,7 +95,7 @@ def env_textoCaja(work):
         cajaTexto.delete(0,len(texto))
         current_x=work.x
         current_y=work.y
-        data="texto"+";"+str(current_x)+";"+str(current_y)+";"+str(work.x)+";"+str(work.y)+";"+texto
+        data="texto"+";"+str(current_x)+";"+str(current_y)+";"+str(work.x)+";"+str(work.y)+";"+texto+";"+str(color)
         env(data)
 
 
@@ -180,11 +177,12 @@ def slider_changed(event):
     value_label.configure(text=get_current_value())
 
 slider=ttk.Scale(root,from_=0,to=100,orient='horizontal',command=slider_changed, variable=current_value)
-slider.place(x=30,y=530)
+slider.place(x=150,y=530)
 
 #value label
+ 
 value_label= ttk.Label(root,text=get_current_value())
-slider.place(x=150,y=530)
+value_label.place(x=147,y=550)
 
 #texto
 cajaTexto = tk.Entry(root,font="Helvetica 15")
